@@ -1,4 +1,3 @@
-
 import 'platform_version_platform_interface.dart';
 
 class PlatformVersion {
