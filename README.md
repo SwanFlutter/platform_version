@@ -25,7 +25,7 @@ Open your project's `pubspec.yaml` file and add the following dependency:
 dependencies:
   platform_version:
     git:
-      url: https://github.com/your-username/platform_version.git
+      url: https://github.com/SwanFlutter/platform_version.git
 ```
 
 Or if published on pub.dev:
