@@ -1,6 +1,6 @@
 name: platform_version
 description: "A cross-platform Flutter plugin to retrieve the OS/platform version and device/system information. Supports Android, iOS, Web, Windows, macOS and Linux."
-version: 0.0.1
+version: 0.0.2
 homepage: "https://github.com/SwanFlutter/platform_version"
 
 environment:

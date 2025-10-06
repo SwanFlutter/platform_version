@@ -1,46 +1,60 @@
-# Platform Version Plugin
+# platform_version
 
-A Flutter plugin for getting the current platform version information and comprehensive device details.
+A cross-platform Flutter plugin for retrieving current platform version information and comprehensive device details.
 
-## Description
+[![platform_version](https://img.shields.io/pub/v/platform_version.svg)](https://pub.dev/packages/platform_version)
+[![Coverage](https://codecov.io/gh/SwanFlutter/platform_version/branch/main/graph/badge.svg)](https://codecov.io/gh/SwanFlutter/platform_version)
+[![License: MIT](https://img.shields.io/badge/license-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/SwanFlutter/platform_version?style=social)](https://github.com/SwanFlutter/platform_version/)
 
-This plugin provides the ability to retrieve current platform version information and detailed device information in Flutter applications. The plugin supports all major platforms including Android, iOS, Web, Windows, macOS, and Linux.
+## Overview
+
+A lightweight, cross-platform Flutter plugin that exposes the current platform version and useful device information to Dart code. This plugin provides native implementations for Android, iOS, Windows, macOS, Linux, and Web platforms.
+
+**Current version:** 0.0.1
 
 ## Features
 
-- 🔍 Get platform version information
-- 📱 Retrieve comprehensive device information
-- 🌐 Cross-platform support (Android, iOS, Web, Windows, macOS, Linux)
-- 🚀 Easy to use API
+- 🔍 Get platform/OS version information (e.g., "Android 13", "iOS 16.2")
+- 📱 Retrieve comprehensive device information (brand, model, SDK version, user agent, etc.)
+- 🌐 Full cross-platform support
+- 🚀 Simple and intuitive API
 - ⚡ Asynchronous operations
+- 🎯 Type-safe with null safety support
+- 📦 Zero external dependencies
+- 🧪 Well-tested and production-ready
 
 ## Supported Platforms
 
-- ✅ Android
-- ✅ iOS  
-- ✅ Web
-- ✅ Windows
-- ✅ macOS
-- ✅ Linux
+| Platform | Minimum | Status | Notes |
+|----------|---------|--------|-------|
+| Android  | API 21+ (Android 5.0+) | ✅ Supported | `android/build.gradle` sets `minSdk = 21` |
+| iOS      | 9.0+    | ✅ Supported | `ios/platform_version.podspec` sets platform iOS 9.0 |
+| Web      | Any     | ✅ Supported | Web implementation available |
+| Windows  | 10+     | ✅ Supported | Plugin returns Windows major version; supports Windows 10 and newer |
+| macOS    | 10.11+  | ✅ Supported | `macos/platform_version.podspec` sets macOS 10.11 |
+| Linux    | Any     | ✅ Supported | Linux implementation provided (GTK) |
 
 ## Installation
 
 ### 1. Add Dependency
 
-Open your project's `pubspec.yaml` file and add the following dependency:
+Add the following to your project's `pubspec.yaml`:
+
+**From pub.dev:**
+
+```yaml
+dependencies:
+  platform_version: ^0.0.2
+```
+
+**From Git (latest):**
 
 ```yaml
 dependencies:
   platform_version:
     git:
       url: https://github.com/SwanFlutter/platform_version.git
-```
-
-Or if published on pub.dev:
-
-```yaml
-dependencies:
-  platform_version: ^0.0.1
 ```
 
 ### 2. Install Packages
@@ -55,178 +69,445 @@ flutter pub get
 import 'package:platform_version/platform_version.dart';
 ```
 
+## Platform Configuration
+
+### Android Configuration
+
+The plugin supports Android 5.0 (API level 21) and above. No additional configuration is required in most cases.
+
+#### Optional: Verify Minimum SDK in Your App
+
+Ensure your app's `android/app/build.gradle` has a minimum SDK of 21 or higher:
+
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21  // Or higher
+        targetSdkVersion flutter.targetSdkVersion
+        // ...
+    }
+}
+```
+
+#### Permissions
+
+This plugin does not require any special permissions. However, if you need device information for analytics or debugging, ensure you have the appropriate privacy policy in place.
+
+**Note:** The plugin uses standard Android APIs that don't require additional permissions:
+- `Build.BRAND`
+- `Build.MODEL`
+- `Build.MANUFACTURER`
+- `Build.VERSION.SDK_INT`
+- `Build.VERSION.RELEASE`
+- `Build.DEVICE`
+- `Build.HARDWARE`
+
+### iOS Configuration
+
+The plugin supports iOS 9.0 and above. No additional configuration is required.
+
+#### Optional: Verify Deployment Target
+
+Ensure your app's iOS deployment target is set to 9.0 or higher. Check your `ios/Podfile`:
+
+```ruby
+platform :ios, '9.0'
+```
+
+Alternatively, you can set it in Xcode:
+1. Open `ios/Runner.xcworkspace` in Xcode
+2. Select the **Runner** project in the navigator
+3. Select the **Runner** target
+4. Go to **General** > **Deployment Info**
+5. Set **iOS Deployment Target** to 9.0 or higher
+
+#### Privacy Considerations
+
+The plugin accesses the following device information:
+- Device name (`UIDevice.current.name`)
+- Device model (`UIDevice.current.model`)
+- System name (`UIDevice.current.systemName`)
+- System version (`UIDevice.current.systemVersion`)
+- Identifier for vendor (`UIDevice.current.identifierForVendor`)
+
+These APIs don't require special permissions but should be used according to Apple's privacy guidelines.
+
+### Web Configuration
+
+No configuration required. The plugin works out-of-the-box on web platforms.
+
+### Windows/macOS/Linux Configuration
+
+No additional configuration required for desktop platforms.
+
 ## Usage
 
-### Simple Usage - Platform Version
+### Quick Start
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:platform_version/platform_version.dart';
 
+void main() => runApp(const MyApp());
+
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+  
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
+  final _plugin = PlatformVersion();
   String _platformVersion = 'Unknown';
-  final _platformVersionPlugin = PlatformVersion();
+  Map<String, dynamic> _deviceInfo = {};
 
   @override
   void initState() {
     super.initState();
-    _getPlatformVersion();
+    _initPlatformState();
   }
 
-  Future<void> _getPlatformVersion() async {
-    String platformVersion;
-    # platform_version
-
-    A small, cross-platform Flutter plugin that exposes the current platform version and useful device information to Dart code.
-
-    This repository provides native implementations for Android, iOS, Windows, macOS, Linux and a web implementation. Use it when you need a simple API to read the OS version and basic device/system metadata.
-
-    Current package version: 0.0.1
-
-    ## Key features
-
-    - Get the current platform/OS version (e.g. "Android 13", "iOS 16.2").
-    - Retrieve a Map of device/system information (brand, model, SDK version, user agent, etc.).
-    - Supports: Android, iOS, Web, Windows, macOS, Linux.
-
-    ## Installation
-
-    Add the package to your project's `pubspec.yaml`:
-
-    From pub.dev (when published):
-
-    ```yaml
-    dependencies:
-      platform_version: ^0.0.1
-    ```
-
-    From Git:
-
-    ```yaml
-    dependencies:
-      platform_version:
-        git:
-          url: https://github.com/SwanFlutter/platform_version.git
-    ```
-
-    Then install:
-
-    ```bash
-    flutter pub get
-    ```
-
-    ## Quick example
-
-    ```dart
-    import 'package:flutter/material.dart';
-    import 'package:platform_version/platform_version.dart';
-
-    void main() => runApp(const MyApp());
-
-    class MyApp extends StatefulWidget {
-      const MyApp({super.key});
-      @override
-      State<MyApp> createState() => _MyAppState();
+  Future<void> _initPlatformState() async {
+    try {
+      // Get platform version
+      final version = await _plugin.getPlatformVersion();
+      
+      // Get device information
+      final info = await _plugin.getDeviceInfo();
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _platformVersion = version ?? 'Unknown';
+        _deviceInfo = info;
+      });
+    } catch (e) {
+      debugPrint('Error: $e');
     }
+  }
 
-    class _MyAppState extends State<MyApp> {
-      final _plugin = PlatformVersion();
-      String _version = 'Unknown';
-      Map<String, dynamic> _deviceInfo = {};
-
-      @override
-      void initState() {
-        super.initState();
-        _init();
-      }
-
-      Future<void> _init() async {
-        try {
-          final version = await _plugin.getPlatformVersion();
-          final info = await _plugin.getDeviceInfo();
-          if (!mounted) return;
-          setState(() {
-            _version = version ?? 'Unknown';
-            _deviceInfo = info;
-          });
-        } catch (e) {
-          // handle or log
-        }
-      }
-
-      @override
-      Widget build(BuildContext context) {
-        return MaterialApp(
-          home: Scaffold(
-            appBar: AppBar(title: const Text('platform_version example')),
-            body: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Platform version: $_version'),
-                  const SizedBox(height: 12),
-                  const Text('Device info:'),
-                  ..._deviceInfo.entries.map((e) => Text('${e.key}: ${e.value}'))
-                ],
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Platform Version Example'),
+          centerTitle: true,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Platform Version',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _platformVersion,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 20),
+              const Text(
+                'Device Information',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: Card(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: _deviceInfo.length,
+                    itemBuilder: (context, index) {
+                      final entry = _deviceInfo.entries.elementAt(index);
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 120,
+                              child: Text(
+                                '${entry.key}:',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text('${entry.value}'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
-        );
-      }
-    }
-    ```
+        ),
+      ),
+    );
+  }
+}
+```
 
-    ## API
+## API Reference
 
-    Public class: `PlatformVersion`
+### Class: `PlatformVersion`
 
-    - Future<String?> getPlatformVersion()
-      - Returns a human-friendly platform/OS version (or null).
+Main plugin class providing access to platform and device information.
 
-    - Future<Map<String, dynamic>> getDeviceInfo()
-      - Returns platform-specific key/value information about the device or runtime.
+#### Methods
 
-    Refer to the source files in `lib/` for more details and platform-specific keys.
+##### `getPlatformVersion()`
 
-    ## Example app
+```dart
+Future<String?> getPlatformVersion()
+```
 
-    See `example/lib/main.dart` for a complete example using the plugin.
+Returns a human-readable platform/OS version string.
 
-    ## Development
+**Returns:**
+- `String?` - Platform version or `null` if unavailable
 
-    Requirements:
+**Examples:**
+- Android: `"Android 13"`
+- iOS: `"iOS 16.2"`
+- Windows: `"Windows 10"`
+- macOS: `"macOS 13.0"`
+- Linux: `"Linux 5.15.0"`
+- Web: Browser and version info
 
-    - Flutter >= 3.3.0
-    - Dart >= 3.9.2
+**Usage:**
 
-    To run the example:
+```dart
+final plugin = PlatformVersion();
+final version = await plugin.getPlatformVersion();
+print('Running on: $version');
+```
 
-    ```bash
-    cd example
-    flutter pub get
-    flutter run
-    ```
+##### `getDeviceInfo()`
 
-    Run unit tests:
+```dart
+Future<Map<String, dynamic>> getDeviceInfo()
+```
 
-    ```bash
-    flutter test
-    ```
+Returns comprehensive device/system information as a key-value map.
 
-    ## Contributing
+**Returns:**
+- `Map<String, dynamic>` - Platform-specific device information
 
-    Contributions are welcome. Open issues or pull requests for bug fixes, features, or docs improvements. Please follow the existing code style and add tests for new behavior.
+**Platform-Specific Information:**
 
-    ## License
+**Android:**
+```dart
+{
+  'brand': 'Samsung',           // Device brand
+  'model': 'SM-G998B',          // Device model
+  'manufacturer': 'Samsung',    // Manufacturer name
+  'sdkVersion': '33',           // Android SDK version
+  'androidVersion': '13',       // Android version
+  'device': 'Galaxy S21',       // Device name
+  'hardware': 'exynos2100',     // Hardware name
+  'isPhysicalDevice': true,     // Physical device flag
+}
+```
 
-    This project is licensed under the MIT License. See `LICENSE` for details.
+**iOS:**
+```dart
+{
+  'name': 'iPhone 14 Pro',      // Device name
+  'model': 'iPhone15,2',        // Device model
+  'systemName': 'iOS',          // System name
+  'systemVersion': '16.2',      // iOS version
+  'identifierForVendor': '...', // Unique vendor ID
+  'isPhysicalDevice': true,     // Physical device flag
+  'utsname': {...},             // System information
+}
+```
 
-    ## Changelog
+**Web:**
+```dart
+{
+  'userAgent': '...',           // Browser user agent
+  'platform': 'MacIntel',       // Platform identifier
+  'vendor': 'Google Inc.',      // Browser vendor
+  'language': 'en-US',          // Browser language
+  'languages': ['en-US', ...],  // Supported languages
+  'hardwareConcurrency': 8,     // CPU cores
+  'deviceMemory': 8,            // Device memory (GB)
+}
+```
 
-    The changelog is maintained in `CHANGELOG.md`.
+**Windows/macOS/Linux:**
+```dart
+{
+  'osName': 'Windows',          // Operating system name
+  'osVersion': '10.0.19044',    // OS version
+  'computerName': 'MY-PC',      // Computer name
+  'numberOfCores': 8,           // CPU cores
+  'systemMemory': 16384,        // RAM in MB
+}
+```
+
+**Usage:**
+
+```dart
+final plugin = PlatformVersion();
+final info = await plugin.getDeviceInfo();
+
+// Access specific information
+final brand = info['brand'] as String?;
+final model = info['model'] as String?;
+
+// Iterate through all information
+info.forEach((key, value) {
+  print('$key: $value');
+});
+```
+
+## Advanced Usage Examples
+
+### Conditional Platform Logic
+
+```dart
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:platform_version/platform_version.dart';
+
+Future<void> checkPlatform() async {
+  final plugin = PlatformVersion();
+  
+  if (kIsWeb) {
+    // Web-specific logic
+    final info = await plugin.getDeviceInfo();
+    print('Browser: ${info['userAgent']}');
+  } else if (Platform.isAndroid) {
+    // Android-specific logic
+    final info = await plugin.getDeviceInfo();
+    print('Android device: ${info['brand']} ${info['model']}');
+  } else if (Platform.isIOS) {
+    // iOS-specific logic
+    final info = await plugin.getDeviceInfo();
+    print('iOS device: ${info['name']}');
+  }
+}
+```
+
+### Feature Detection
+
+```dart
+Future<bool> supportsFeature() async {
+  final plugin = PlatformVersion();
+  final info = await plugin.getDeviceInfo();
+  
+  if (Platform.isAndroid) {
+    final sdkVersion = int.tryParse(info['sdkVersion'] ?? '0') ?? 0;
+    return sdkVersion >= 28; // Android 9.0+
+  } else if (Platform.isIOS) {
+    final version = info['systemVersion'] as String? ?? '0';
+    final majorVersion = int.tryParse(version.split('.').first) ?? 0;
+    return majorVersion >= 13; // iOS 13+
+  }
+  
+  return false;
+}
+```
+
+### Error Handling
+
+```dart
+import 'package:flutter/services.dart';
+
+Future<void> safeGetPlatformInfo() async {
+  final plugin = PlatformVersion();
+  
+  try {
+    final version = await plugin.getPlatformVersion();
+    final info = await plugin.getDeviceInfo();
+    
+    print('Version: $version');
+    print('Device Info: $info');
+    
+  } on PlatformException catch (e) {
+    // Handle platform-specific errors
+    print('Platform error: ${e.code} - ${e.message}');
+    
+  } on MissingPluginException catch (e) {
+    // Handle missing plugin implementation
+    print('Plugin not implemented for this platform: $e');
+    
+  } catch (e) {
+    // Handle unexpected errors
+    print('Unexpected error: $e');
+  }
+}
+```
+
+### Device Analytics
+
+```dart
+class DeviceAnalytics {
+  final PlatformVersion _plugin = PlatformVersion();
+  
+  Future<Map<String, dynamic>> collectAnalytics() async {
+    final version = await _plugin.getPlatformVersion();
+    final info = await _plugin.getDeviceInfo();
+    
+    return {
+      'timestamp': DateTime.now().toIso8601String(),
+      'platform_version': version,
+      'device_info': info,
+      'app_version': '1.0.0', // Your app version
+    };
+  }
+  
+  Future<void> sendToAnalytics() async {
+    final data = await collectAnalytics();
+    // Send to your analytics service
+    print('Analytics data: $data');
+  }
+}
+```
+
+
+
+
+## Support
+
+- 🐛 **Bug Reports:** [GitHub Issues](https://github.com/SwanFlutter/platform_version/issues)
+- 💬 **Questions:** [GitHub Discussions](https://github.com/SwanFlutter/platform_version/discussions)
+- 📧 **Email:** swan.dev1993@gmail.com
+
+
+
+---
+
+
+<div align="center">
+
+**If you find this package useful, please ⭐ star the repo!**
+
+Made with ❤️ by SwanFlutter
+
+</div>
