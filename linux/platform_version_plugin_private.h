@@ -8,3 +8,6 @@
 
 // Handles the getPlatformVersion method call.
 FlMethodResponse *get_platform_version();
+
+// Handles the getDeviceInfo method call.
+FlMethodResponse *get_device_info();

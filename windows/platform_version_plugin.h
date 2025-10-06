@@ -3,6 +3,7 @@
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
+#include <flutter/standard_method_codec.h>
 
 #include <memory>
 
@@ -24,6 +25,10 @@ class PlatformVersionPlugin : public flutter::Plugin {
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue> &method_call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
+
+ private:
+  // Returns device information as a map.
+  flutter::EncodableMap GetDeviceInfo();
 };
 
 }  // namespace platform_version

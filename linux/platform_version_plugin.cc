@@ -3,6 +3,10 @@
 #include <flutter_linux/flutter_linux.h>
 #include <gtk/gtk.h>
 #include <sys/utsname.h>
+#include <sys/sysinfo.h>
+#include <unistd.h>
+#include <fstream>
+#include <string>
 
 #include <cstring>
 
@@ -28,6 +32,8 @@ static void platform_version_plugin_handle_method_call(
 
   if (strcmp(method, "getPlatformVersion") == 0) {
     response = get_platform_version();
+  } else if (strcmp(method, "getDeviceInfo") == 0) {
+    response = get_device_info();
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
   }
@@ -41,6 +47,85 @@ FlMethodResponse* get_platform_version() {
   g_autofree gchar *version = g_strdup_printf("Linux %s", uname_data.version);
   g_autoptr(FlValue) result = fl_value_new_string(version);
   return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+}
+
+FlMethodResponse* get_device_info() {
+  g_autoptr(FlValue) device_info = fl_value_new_map();
+  
+  // Get system information
+  struct utsname uname_data = {};
+  uname(&uname_data);
+  
+  struct sysinfo sys_info;
+  sysinfo(&sys_info);
+  
+  // Get hostname
+  char hostname[256];
+  gethostname(hostname, sizeof(hostname));
+  
+  // Add basic system info
+  fl_value_set_string_take(device_info, "systemName", fl_value_new_string(uname_data.sysname));
+  fl_value_set_string_take(device_info, "nodeName", fl_value_new_string(uname_data.nodename));
+  fl_value_set_string_take(device_info, "release", fl_value_new_string(uname_data.release));
+  fl_value_set_string_take(device_info, "version", fl_value_new_string(uname_data.version));
+  fl_value_set_string_take(device_info, "machine", fl_value_new_string(uname_data.machine));
+  fl_value_set_string_take(device_info, "hostname", fl_value_new_string(hostname));
+  
+  // Add memory information
+  fl_value_set_string_take(device_info, "totalRam", fl_value_new_int(sys_info.totalram));
+  fl_value_set_string_take(device_info, "freeRam", fl_value_new_int(sys_info.freeram));
+  fl_value_set_string_take(device_info, "sharedRam", fl_value_new_int(sys_info.sharedram));
+  fl_value_set_string_take(device_info, "bufferRam", fl_value_new_int(sys_info.bufferram));
+  fl_value_set_string_take(device_info, "totalSwap", fl_value_new_int(sys_info.totalswap));
+  fl_value_set_string_take(device_info, "freeSwap", fl_value_new_int(sys_info.freeswap));
+  fl_value_set_string_take(device_info, "processes", fl_value_new_int(sys_info.procs));
+  fl_value_set_string_take(device_info, "uptime", fl_value_new_int(sys_info.uptime));
+  
+  // Get number of processors
+  long num_processors = sysconf(_SC_NPROCESSORS_ONLN);
+  fl_value_set_string_take(device_info, "numberOfProcessors", fl_value_new_int(num_processors));
+  
+  // Try to get CPU model from /proc/cpuinfo
+  std::ifstream cpuinfo("/proc/cpuinfo");
+  std::string line;
+  std::string cpu_model = "Unknown";
+  
+  while (std::getline(cpuinfo, line)) {
+    if (line.find("model name") != std::string::npos) {
+      size_t pos = line.find(":");
+      if (pos != std::string::npos) {
+        cpu_model = line.substr(pos + 2);
+        break;
+      }
+    }
+  }
+  fl_value_set_string_take(device_info, "cpuModel", fl_value_new_string(cpu_model.c_str()));
+  
+  // Try to get distribution info from /etc/os-release
+  std::ifstream os_release("/etc/os-release");
+  std::string distro_name = "Unknown";
+  std::string distro_version = "Unknown";
+  
+  while (std::getline(os_release, line)) {
+    if (line.find("NAME=") == 0) {
+      distro_name = line.substr(5);
+      // Remove quotes if present
+      if (distro_name.front() == '"' && distro_name.back() == '"') {
+        distro_name = distro_name.substr(1, distro_name.length() - 2);
+      }
+    } else if (line.find("VERSION=") == 0) {
+      distro_version = line.substr(8);
+      // Remove quotes if present
+      if (distro_version.front() == '"' && distro_version.back() == '"') {
+        distro_version = distro_version.substr(1, distro_version.length() - 2);
+      }
+    }
+  }
+  
+  fl_value_set_string_take(device_info, "distributionName", fl_value_new_string(distro_name.c_str()));
+  fl_value_set_string_take(device_info, "distributionVersion", fl_value_new_string(distro_version.c_str()));
+  
+  return FL_METHOD_RESPONSE(fl_method_success_response_new(device_info));
 }
 
 static void platform_version_plugin_dispose(GObject* object) {

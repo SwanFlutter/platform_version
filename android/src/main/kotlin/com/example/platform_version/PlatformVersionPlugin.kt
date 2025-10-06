@@ -1,5 +1,6 @@
 package com.example.platform_version
 
+import android.os.Build
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -25,11 +26,40 @@ class PlatformVersionPlugin :
         call: MethodCall,
         result: Result
     ) {
-        if (call.method == "getPlatformVersion") {
-            result.success("Android ${android.os.Build.VERSION.RELEASE}")
-        } else {
-            result.notImplemented()
+        when (call.method) {
+            "getPlatformVersion" -> {
+                result.success("Android ${Build.VERSION.RELEASE}")
+            }
+            "getDeviceInfo" -> {
+                val deviceInfo = getDeviceInfo()
+                result.success(deviceInfo)
+            }
+            else -> {
+                result.notImplemented()
+            }
         }
+    }
+
+    private fun getDeviceInfo(): Map<String, Any> {
+        return mapOf(
+            "brand" to Build.BRAND,
+            "model" to Build.MODEL,
+            "manufacturer" to Build.MANUFACTURER,
+            "device" to Build.DEVICE,
+            "product" to Build.PRODUCT,
+            "version" to Build.VERSION.RELEASE,
+            "sdkInt" to Build.VERSION.SDK_INT,
+            "codename" to Build.VERSION.CODENAME,
+            "incremental" to Build.VERSION.INCREMENTAL,
+            "board" to Build.BOARD,
+            "hardware" to Build.HARDWARE,
+            "fingerprint" to Build.FINGERPRINT,
+            "host" to Build.HOST,
+            "id" to Build.ID,
+            "tags" to Build.TAGS,
+            "type" to Build.TYPE,
+            "user" to Build.USER
+        )
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {

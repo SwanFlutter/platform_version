@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:platform_version/platform_version.dart';
-import 'package:platform_version/platform_version_platform_interface.dart';
 import 'package:platform_version/platform_version_method_channel.dart';
+import 'package:platform_version/platform_version_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockPlatformVersionPlatform
@@ -9,6 +9,11 @@ class MockPlatformVersionPlatform
     implements PlatformVersionPlatform {
   @override
   Future<String?> getPlatformVersion() => Future.value('42');
+
+  @override
+  Future<Map<String, dynamic>?> getDeviceInfo() {
+    throw UnimplementedError();
+  }
 }
 
 void main() {

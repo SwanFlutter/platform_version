@@ -23,4 +23,25 @@ class PlatformVersionWeb extends PlatformVersionPlatform {
     final version = web.window.navigator.userAgent;
     return version;
   }
+
+  /// Returns a [Map] containing device information for web platform.
+  @override
+  Future<Map<String, dynamic>?> getDeviceInfo() async {
+    final navigator = web.window.navigator;
+    return {
+      'platform': navigator.platform,
+      'userAgent': navigator.userAgent,
+      'language': navigator.language,
+      'languages': navigator.languages,
+      'cookieEnabled': navigator.cookieEnabled,
+      'onLine': navigator.onLine,
+      'vendor': navigator.vendor,
+      'vendorSub': navigator.vendorSub,
+      'product': navigator.product,
+      'productSub': navigator.productSub,
+      'appName': navigator.appName,
+      'appVersion': navigator.appVersion,
+      'appCodeName': navigator.appCodeName,
+    };
+  }
 }

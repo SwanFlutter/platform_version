@@ -16,4 +16,11 @@ class MethodChannelPlatformVersion extends PlatformVersionPlatform {
     );
     return version;
   }
+
+  @override
+  Future<Map<String, dynamic>?> getDeviceInfo() async {
+    final result = await methodChannel.invokeMethod('getDeviceInfo');
+    if (result == null) return null;
+    return Map<String, dynamic>.from(result as Map);
+  }
 }

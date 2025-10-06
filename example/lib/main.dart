@@ -17,6 +17,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
+  Map<String, dynamic>? _deviceInfo;
   final _platformVersionPlugin = PlatformVersion();
 
   @override
@@ -28,14 +29,18 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     String platformVersion;
+    Map<String, dynamic>? deviceInfo;
+    
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
       platformVersion =
           await _platformVersionPlugin.getPlatformVersion() ??
           'Unknown platform version';
+      deviceInfo = await _platformVersionPlugin.getDeviceInfo();
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
+      deviceInfo = null;
     }
 
     // If the widget was removed from the tree while the asynchronous platform
@@ -45,6 +50,7 @@ class _MyAppState extends State<MyApp> {
 
     setState(() {
       _platformVersion = platformVersion;
+      _deviceInfo = deviceInfo;
     });
   }
 
@@ -53,7 +59,54 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(title: const Text('Plugin example app')),
-        body: Center(child: Text('Running on: $_platformVersion\n')),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Platform Version:',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(_platformVersion),
+                const SizedBox(height: 24),
+                Text(
+                  'Device Information:',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                if (_deviceInfo != null) ...[
+                  for (final entry in _deviceInfo!.entries)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: Text(
+                              '${entry.key}:',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              entry.value?.toString() ?? 'N/A',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ] else
+                  const Text('No device information available'),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
