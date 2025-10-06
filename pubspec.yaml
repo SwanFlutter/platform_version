@@ -1,7 +1,7 @@
 name: platform_version
-description: "A new Flutter project."
+description: "A cross-platform Flutter plugin to retrieve the OS/platform version and device/system information. Supports Android, iOS, Web, Windows, macOS and Linux."
 version: 0.0.1
-homepage:
+homepage: "https://github.com/SwanFlutter/platform_version"
 
 environment:
   sdk: ^3.9.2
@@ -12,8 +12,8 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  web: ^1.0.0
-  plugin_platform_interface: ^2.0.2
+  web: ^1.1.1
+  plugin_platform_interface: ^2.1.8
 
 dev_dependencies:
   flutter_test:

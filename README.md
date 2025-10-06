@@ -80,275 +80,153 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _getPlatformVersion() async {
     String platformVersion;
-    try {
-      platformVersion = await _platformVersionPlugin.getPlatformVersion() ?? 'Unknown platform version';
-    } catch (e) {
-      platformVersion = 'Failed to get platform version: $e';
+    # platform_version
+
+    A small, cross-platform Flutter plugin that exposes the current platform version and useful device information to Dart code.
+
+    This repository provides native implementations for Android, iOS, Windows, macOS, Linux and a web implementation. Use it when you need a simple API to read the OS version and basic device/system metadata.
+
+    Current package version: 0.0.1
+
+    ## Key features
+
+    - Get the current platform/OS version (e.g. "Android 13", "iOS 16.2").
+    - Retrieve a Map of device/system information (brand, model, SDK version, user agent, etc.).
+    - Supports: Android, iOS, Web, Windows, macOS, Linux.
+
+    ## Installation
+
+    Add the package to your project's `pubspec.yaml`:
+
+    From pub.dev (when published):
+
+    ```yaml
+    dependencies:
+      platform_version: ^0.0.1
+    ```
+
+    From Git:
+
+    ```yaml
+    dependencies:
+      platform_version:
+        git:
+          url: https://github.com/SwanFlutter/platform_version.git
+    ```
+
+    Then install:
+
+    ```bash
+    flutter pub get
+    ```
+
+    ## Quick example
+
+    ```dart
+    import 'package:flutter/material.dart';
+    import 'package:platform_version/platform_version.dart';
+
+    void main() => runApp(const MyApp());
+
+    class MyApp extends StatefulWidget {
+      const MyApp({super.key});
+      @override
+      State<MyApp> createState() => _MyAppState();
     }
 
-    if (!mounted) return;
+    class _MyAppState extends State<MyApp> {
+      final _plugin = PlatformVersion();
+      String _version = 'Unknown';
+      Map<String, dynamic> _deviceInfo = {};
 
-    setState(() {
-      _platformVersion = platformVersion;
-    });
-  }
+      @override
+      void initState() {
+        super.initState();
+        _init();
+      }
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Platform Version Example'),
-        ),
-        body: Center(
-          child: Text('Running on: $_platformVersion'),
-        ),
-      ),
-    );
-  }
-}
-```
+      Future<void> _init() async {
+        try {
+          final version = await _plugin.getPlatformVersion();
+          final info = await _plugin.getDeviceInfo();
+          if (!mounted) return;
+          setState(() {
+            _version = version ?? 'Unknown';
+            _deviceInfo = info;
+          });
+        } catch (e) {
+          // handle or log
+        }
+      }
 
-### Device Information Usage
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:platform_version/platform_version.dart';
-
-class DeviceInfoApp extends StatefulWidget {
-  @override
-  _DeviceInfoAppState createState() => _DeviceInfoAppState();
-}
-
-class _DeviceInfoAppState extends State<DeviceInfoApp> {
-  String _platformVersion = 'Unknown';
-  Map<String, dynamic> _deviceInfo = {};
-  final _platformVersionPlugin = PlatformVersion();
-
-  @override
-  void initState() {
-    super.initState();
-    _initPlatformState();
-  }
-
-  Future<void> _initPlatformState() async {
-    String platformVersion;
-    Map<String, dynamic> deviceInfo;
-    
-    try {
-      platformVersion = await _platformVersionPlugin.getPlatformVersion() ?? 'Unknown platform version';
-      deviceInfo = await _platformVersionPlugin.getDeviceInfo();
-    } catch (e) {
-      platformVersion = 'Failed to get platform version: $e';
-      deviceInfo = {'error': 'Failed to get device info: $e'};
-    }
-
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-      _deviceInfo = deviceInfo;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Device Information Example'),
-        ),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Platform Version:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      @override
+      Widget build(BuildContext context) {
+        return MaterialApp(
+          home: Scaffold(
+            appBar: AppBar(title: const Text('platform_version example')),
+            body: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Platform version: $_version'),
+                  const SizedBox(height: 12),
+                  const Text('Device info:'),
+                  ..._deviceInfo.entries.map((e) => Text('${e.key}: ${e.value}'))
+                ],
               ),
-              Text(_platformVersion),
-              SizedBox(height: 20),
-              Text(
-                'Device Information:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              ..._deviceInfo.entries.map((entry) => Padding(
-                padding: EdgeInsets.symmetric(vertical: 2.0),
-                child: Text('${entry.key}: ${entry.value}'),
-              )).toList(),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-}
-```
-
-### Advanced Usage with Error Handling
-
-```dart
-import 'package:flutter/services.dart';
-import 'package:platform_version/platform_version.dart';
-
-class PlatformService {
-  static final _platformVersionPlugin = PlatformVersion();
-
-  static Future<String> getPlatformInfo() async {
-    try {
-      final version = await _platformVersionPlugin.getPlatformVersion();
-      return version ?? 'Unknown platform version';
-    } on PlatformException catch (e) {
-      return 'Error getting platform information: ${e.message}';
-    } catch (e) {
-      return 'Unexpected error: $e';
+        );
+      }
     }
-  }
+    ```
 
-  static Future<Map<String, dynamic>> getDeviceInformation() async {
-    try {
-      final deviceInfo = await _platformVersionPlugin.getDeviceInfo();
-      return deviceInfo;
-    } on PlatformException catch (e) {
-      return {'error': 'Error getting device information: ${e.message}'};
-    } catch (e) {
-      return {'error': 'Unexpected error: $e'};
-    }
-  }
-}
-```
+    ## API
 
-## API Reference
+    Public class: `PlatformVersion`
 
-### `PlatformVersion` Class
+    - Future<String?> getPlatformVersion()
+      - Returns a human-friendly platform/OS version (or null).
 
-#### Methods
+    - Future<Map<String, dynamic>> getDeviceInfo()
+      - Returns platform-specific key/value information about the device or runtime.
 
-##### `getPlatformVersion()`
+    Refer to the source files in `lib/` for more details and platform-specific keys.
 
-Returns the current platform version.
+    ## Example app
 
-**Returns:** `Future<String?>`
+    See `example/lib/main.dart` for a complete example using the plugin.
 
-**Example:**
-```dart
-final platformVersion = PlatformVersion();
-String? version = await platformVersion.getPlatformVersion();
-```
+    ## Development
 
-**Output on different platforms:**
-- **Android:** Android version (e.g., "Android 13")
-- **iOS:** iOS version (e.g., "iOS 16.0")
-- **Web:** Browser User Agent
-- **Windows:** Windows version
-- **macOS:** macOS version
-- **Linux:** Linux distribution information
+    Requirements:
 
-##### `getDeviceInfo()`
+    - Flutter >= 3.3.0
+    - Dart >= 3.9.2
 
-Returns comprehensive device information as a Map.
+    To run the example:
 
-**Returns:** `Future<Map<String, dynamic>>`
+    ```bash
+    cd example
+    flutter pub get
+    flutter run
+    ```
 
-**Example:**
-```dart
-final platformVersion = PlatformVersion();
-Map<String, dynamic> deviceInfo = await platformVersion.getDeviceInfo();
-```
+    Run unit tests:
 
-**Output on different platforms:**
+    ```bash
+    flutter test
+    ```
 
-**Android:**
-- `brand`: Device brand (e.g., "Samsung")
-- `model`: Device model (e.g., "Galaxy S23")
-- `version`: Android version (e.g., "13")
-- `sdkInt`: Android SDK version (e.g., 33)
-- `manufacturer`: Device manufacturer
+    ## Contributing
 
-**iOS:**
-- `name`: Device name (e.g., "iPhone")
-- `model`: Device model (e.g., "iPhone14,2")
-- `systemName`: System name (e.g., "iOS")
-- `systemVersion`: iOS version (e.g., "16.0")
+    Contributions are welcome. Open issues or pull requests for bug fixes, features, or docs improvements. Please follow the existing code style and add tests for new behavior.
 
-**Web:**
-- `platform`: Browser platform
-- `userAgent`: Full user agent string
-- `language`: Browser language
-- `cookieEnabled`: Cookie support status
-- `onLine`: Online status
+    ## License
 
-**Windows/macOS/Linux:**
-- Platform-specific system information
+    This project is licensed under the MIT License. See `LICENSE` for details.
 
-## Complete Example
+    ## Changelog
 
-To see the complete example, check the `example/lib/main.dart` file.
-
-```bash
-cd example
-flutter run
-```
-
-## Development and Contributing
-
-### Prerequisites
-
-- Flutter SDK (version 3.3.0 or higher)
-- Dart SDK (version 3.9.2 or higher)
-
-### Setting up Development Environment
-
-1. Clone the project:
-```bash
-git clone https://github.com/your-username/platform_version.git
-cd platform_version
-```
-
-2. Install dependencies:
-```bash
-flutter pub get
-```
-
-3. Run tests:
-```bash
-flutter test
-```
-
-4. Run the example:
-```bash
-cd example
-flutter pub get
-flutter run
-```
-
-### Project Structure
-
-```
-platform_version/
-├── lib/
-│   ├── platform_version.dart              # Main plugin API
-│   ├── platform_version_platform_interface.dart  # Platform interface
-│   ├── platform_version_method_channel.dart      # Method Channel implementation
-│   └── platform_version_web.dart          # Web implementation
-├── android/                               # Native Android code
-├── ios/                                   # Native iOS code
-├── linux/                                 # Native Linux code
-├── macos/                                 # Native macOS code
-├── windows/                               # Native Windows code
-├── example/                               # Example application
-└── test/                                  # Unit tests
-```
-
-## License
-
-This project is released under the MIT License. For more information, see the [LICENSE](LICENSE) file.
-
-## Issues and Suggestions
-
-If you encounter any issues or have suggestions, please report them in the [Issues](https://github.com/your-username/platform_version/issues) section.
-
-## Changelog
-
-To view the change history, see the [CHANGELOG.md](CHANGELOG.md) file.
+    The changelog is maintained in `CHANGELOG.md`.

@@ -30,7 +30,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     String platformVersion;
     Map<String, dynamic>? deviceInfo;
-    
+
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
@@ -88,7 +88,9 @@ class _MyAppState extends State<MyApp> {
                             width: 120,
                             child: Text(
                               '${entry.key}:',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           Expanded(
