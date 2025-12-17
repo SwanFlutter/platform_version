@@ -1,6 +1,6 @@
-# example
+# platform_version_example
 
-A new Flutter project.
+Demonstrates how to use the platform_version plugin.
 
 ## Getting Started
 

@@ -17,6 +17,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
+  String? _stableDeviceId;
   Map<String, dynamic>? _deviceInfo;
   final _platformVersionPlugin = PlatformVersion();
 
@@ -29,6 +30,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     String platformVersion;
+    String? stableDeviceId;
     Map<String, dynamic>? deviceInfo;
 
     // Platform messages may fail, so we use a try/catch PlatformException.
@@ -37,9 +39,11 @@ class _MyAppState extends State<MyApp> {
       platformVersion =
           await _platformVersionPlugin.getPlatformVersion() ??
           'Unknown platform version';
+      stableDeviceId = await _platformVersionPlugin.getStableDeviceId();
       deviceInfo = await _platformVersionPlugin.getDeviceInfo();
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
+      stableDeviceId = null;
       deviceInfo = null;
     }
 
@@ -50,6 +54,7 @@ class _MyAppState extends State<MyApp> {
 
     setState(() {
       _platformVersion = platformVersion;
+      _stableDeviceId = stableDeviceId;
       _deviceInfo = deviceInfo;
     });
   }
@@ -71,6 +76,13 @@ class _MyAppState extends State<MyApp> {
                 ),
                 const SizedBox(height: 8),
                 Text(_platformVersion),
+                const SizedBox(height: 24),
+                Text(
+                  'Stable Device ID:',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(_stableDeviceId ?? 'Unknown'),
                 const SizedBox(height: 24),
                 Text(
                   'Device Information:',

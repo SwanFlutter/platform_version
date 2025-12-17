@@ -1,11 +1,13 @@
 package com.example.platform_version
 
+import android.content.Context
 import android.os.Build
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import java.util.UUID
 
 /** PlatformVersionPlugin */
 class PlatformVersionPlugin :
@@ -16,8 +18,13 @@ class PlatformVersionPlugin :
     // This local reference serves to register the plugin with the Flutter Engine and unregister it
     // when the Flutter Engine is detached from the Activity
     private lateinit var channel: MethodChannel
+    private lateinit var applicationContext: Context
+
+    private val prefsName = "platform_version"
+    private val stableDeviceIdKey = "stable_device_id"
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        applicationContext = flutterPluginBinding.applicationContext
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "platform_version")
         channel.setMethodCallHandler(this)
     }
@@ -42,6 +49,7 @@ class PlatformVersionPlugin :
 
     private fun getDeviceInfo(): Map<String, Any> {
         return mapOf(
+            "stableDeviceId" to getOrCreateStableDeviceId(),
             "brand" to Build.BRAND,
             "model" to Build.MODEL,
             "manufacturer" to Build.MANUFACTURER,
@@ -60,6 +68,16 @@ class PlatformVersionPlugin :
             "type" to Build.TYPE,
             "user" to Build.USER
         )
+    }
+
+    private fun getOrCreateStableDeviceId(): String {
+        val prefs = applicationContext.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+        val existing = prefs.getString(stableDeviceIdKey, null)
+        if (!existing.isNullOrBlank()) return existing
+
+        val newId = UUID.randomUUID().toString()
+        prefs.edit().putString(stableDeviceIdKey, newId).apply()
+        return newId
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {

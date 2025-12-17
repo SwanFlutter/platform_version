@@ -11,7 +11,7 @@ A cross-platform Flutter plugin for retrieving current platform version informat
 
 A lightweight, cross-platform Flutter plugin that exposes the current platform version and useful device information to Dart code. This plugin provides native implementations for Android, iOS, Windows, macOS, Linux, and Web platforms.
 
-**Current version:** 0.0.1
+**Current version:** 0.0.3
 
 ## Features
 
@@ -45,7 +45,7 @@ Add the following to your project's `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  platform_version: ^0.0.2
+  platform_version: ^0.0.3
 ```
 
 **From Git (latest):**
@@ -314,6 +314,8 @@ Future<Map<String, dynamic>> getDeviceInfo()
 
 Returns comprehensive device/system information as a key-value map.
 
+This map includes a cross-platform `stableDeviceId` field that is generated once per installation/user profile and persisted using the most appropriate mechanism per platform.
+
 **Returns:**
 - `Map<String, dynamic>` - Platform-specific device information
 
@@ -330,6 +332,7 @@ Returns comprehensive device/system information as a key-value map.
   'device': 'Galaxy S21',       // Device name
   'hardware': 'exynos2100',     // Hardware name
   'isPhysicalDevice': true,     // Physical device flag
+  'stableDeviceId': '...'       // Stable device ID
 }
 ```
 
@@ -343,6 +346,7 @@ Returns comprehensive device/system information as a key-value map.
   'identifierForVendor': '...', // Unique vendor ID
   'isPhysicalDevice': true,     // Physical device flag
   'utsname': {...},             // System information
+  'stableDeviceId': '...'       // Stable device ID
 }
 ```
 
@@ -356,6 +360,7 @@ Returns comprehensive device/system information as a key-value map.
   'languages': ['en-US', ...],  // Supported languages
   'hardwareConcurrency': 8,     // CPU cores
   'deviceMemory': 8,            // Device memory (GB)
+  'stableDeviceId': '...'       // Stable device ID
 }
 ```
 
@@ -367,6 +372,7 @@ Returns comprehensive device/system information as a key-value map.
   'computerName': 'MY-PC',      // Computer name
   'numberOfCores': 8,           // CPU cores
   'systemMemory': 16384,        // RAM in MB
+  'stableDeviceId': '...'       // Stable device ID
 }
 ```
 
@@ -376,6 +382,9 @@ Returns comprehensive device/system information as a key-value map.
 final plugin = PlatformVersion();
 final info = await plugin.getDeviceInfo();
 
+final stableDeviceId = info['stableDeviceId'] as String?;
+print('Stable Device ID: $stableDeviceId');
+
 // Access specific information
 final brand = info['brand'] as String?;
 final model = info['model'] as String?;
@@ -384,6 +393,22 @@ final model = info['model'] as String?;
 info.forEach((key, value) {
   print('$key: $value');
 });
+```
+
+##### `getStableDeviceId()`
+
+```dart
+Future<String?> getStableDeviceId()
+```
+
+Convenience helper to read `stableDeviceId` from `getDeviceInfo()`.
+
+**Usage:**
+
+```dart
+final plugin = PlatformVersion();
+final id = await plugin.getStableDeviceId();
+print('Stable Device ID: $id');
 ```
 
 ## Advanced Usage Examples

@@ -3,6 +3,8 @@
 // This must be included before many other Windows headers.
 #include <windows.h>
 
+#include <objbase.h>
+
 // For getPlatformVersion; remove unless needed for your plugin implementation.
 #include <VersionHelpers.h>
 
@@ -13,7 +15,74 @@
 #include <memory>
 #include <sstream>
 
+#include <string>
+
 namespace platform_version {
+
+static std::string WideToUtf8(const std::wstring& wstr) {
+  if (wstr.empty()) return std::string();
+  int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+  if (size_needed <= 0) return std::string();
+  std::string result(size_needed - 1, '\0');
+  WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, result.data(), size_needed, nullptr, nullptr);
+  return result;
+}
+
+static std::wstring Utf8ToWide(const std::string& str) {
+  if (str.empty()) return std::wstring();
+  int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
+  if (size_needed <= 0) return std::wstring();
+  std::wstring result(size_needed - 1, L'\0');
+  MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, result.data(), size_needed);
+  return result;
+}
+
+static std::string GetOrCreateStableDeviceId() {
+  const wchar_t* kSubKey = L"Software\\platform_version";
+  const wchar_t* kValueName = L"stable_device_id";
+
+  HKEY hKey;
+  if (RegOpenKeyExW(HKEY_CURRENT_USER, kSubKey, 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+    DWORD type = 0;
+    DWORD data_size = 0;
+    if (RegQueryValueExW(hKey, kValueName, nullptr, &type, nullptr, &data_size) == ERROR_SUCCESS &&
+        type == REG_SZ && data_size > sizeof(wchar_t)) {
+      std::wstring buffer(data_size / sizeof(wchar_t), L'\0');
+      if (RegQueryValueExW(hKey, kValueName, nullptr, &type,
+                           reinterpret_cast<LPBYTE>(buffer.data()), &data_size) == ERROR_SUCCESS) {
+        buffer.resize((data_size / sizeof(wchar_t)) - 1);
+        RegCloseKey(hKey);
+        auto existing = WideToUtf8(buffer);
+        if (!existing.empty()) return existing;
+      }
+    }
+    RegCloseKey(hKey);
+  }
+
+  GUID guid;
+  if (CoCreateGuid(&guid) != S_OK) {
+    return "";
+  }
+  wchar_t guid_buf[64];
+  int chars = StringFromGUID2(guid, guid_buf, 64);
+  std::wstring guid_wstr = chars > 0 ? std::wstring(guid_buf) : std::wstring();
+  std::string new_id = WideToUtf8(guid_wstr);
+
+  if (!new_id.empty()) {
+    if (RegCreateKeyExW(HKEY_CURRENT_USER, kSubKey, 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr) ==
+        ERROR_SUCCESS) {
+      std::wstring value_w = Utf8ToWide(new_id);
+      if (!value_w.empty()) {
+        RegSetValueExW(hKey, kValueName, 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>(value_w.c_str()),
+                       static_cast<DWORD>((value_w.size() + 1) * sizeof(wchar_t)));
+      }
+      RegCloseKey(hKey);
+    }
+  }
+
+  return new_id;
+}
 
 // static
 void PlatformVersionPlugin::RegisterWithRegistrar(
@@ -121,6 +190,7 @@ PlatformVersionPlugin::~PlatformVersionPlugin() {}
         GlobalMemoryStatusEx(&mem_info);
         
         // Populate device info map
+        device_info[flutter::EncodableValue("stableDeviceId")] = flutter::EncodableValue(GetOrCreateStableDeviceId());
         device_info[flutter::EncodableValue("computerName")] = flutter::EncodableValue(computer_name_str);
         device_info[flutter::EncodableValue("majorVersion")] = flutter::EncodableValue(static_cast<int32_t>(osvi.dwMajorVersion));
         device_info[flutter::EncodableValue("minorVersion")] = flutter::EncodableValue(static_cast<int32_t>(osvi.dwMinorVersion));

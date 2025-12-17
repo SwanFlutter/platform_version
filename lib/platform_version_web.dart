@@ -3,6 +3,8 @@
 // package as the core of your plugin.
 // ignore: avoid_web_libraries_in_flutter
 
+import 'dart:math';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:web/web.dart' as web;
 
@@ -28,7 +30,9 @@ class PlatformVersionWeb extends PlatformVersionPlatform {
   @override
   Future<Map<String, dynamic>?> getDeviceInfo() async {
     final navigator = web.window.navigator;
+    final stableDeviceId = _getOrCreateStableDeviceId();
     return {
+      'stableDeviceId': stableDeviceId,
       'platform': navigator.platform,
       'userAgent': navigator.userAgent,
       'language': navigator.language,
@@ -43,5 +47,29 @@ class PlatformVersionWeb extends PlatformVersionPlatform {
       'appVersion': navigator.appVersion,
       'appCodeName': navigator.appCodeName,
     };
+  }
+
+  String _getOrCreateStableDeviceId() {
+    const storageKey = 'platform_version_stable_device_id';
+
+    try {
+      final storage = web.window.localStorage;
+      final existing = storage.getItem(storageKey);
+      if (existing != null && existing.isNotEmpty) return existing;
+
+      final newId = _generateId();
+      storage.setItem(storageKey, newId);
+      return newId;
+    } catch (_) {
+      return _generateId();
+    }
+  }
+
+  String _generateId() {
+    final rand = Random();
+    final ts = DateTime.now().microsecondsSinceEpoch;
+    final r1 = rand.nextInt(1 << 30);
+    final r2 = rand.nextInt(1 << 30);
+    return '$ts-$r1-$r2';
   }
 }

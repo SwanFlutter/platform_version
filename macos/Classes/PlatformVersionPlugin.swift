@@ -1,5 +1,6 @@
 import Cocoa
 import FlutterMacOS
+import Security
 
 public class PlatformVersionPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -23,6 +24,7 @@ public class PlatformVersionPlugin: NSObject, FlutterPlugin {
     let processInfo = ProcessInfo.processInfo
     
     var deviceInfo: [String: Any] = [
+      "stableDeviceId": getOrCreateStableDeviceId(),
       "operatingSystemVersionString": processInfo.operatingSystemVersionString,
       "processorCount": processInfo.processorCount,
       "activeProcessorCount": processInfo.activeProcessorCount,
@@ -66,5 +68,59 @@ public class PlatformVersionPlugin: NSObject, FlutterPlugin {
     deviceInfo["kernelVersion"] = kernelVersion ?? "Unknown"
     
     return deviceInfo
+  }
+
+  private func getOrCreateStableDeviceId() -> String {
+    let service = "platform_version"
+    let account = "stable_device_id"
+
+    if let existing = keychainGetString(service: service, account: account), !existing.isEmpty {
+      return existing
+    }
+
+    let newId = UUID().uuidString
+    _ = keychainSetString(newId, service: service, account: account)
+    return newId
+  }
+
+  private func keychainGetString(service: String, account: String) -> String? {
+    let query: [String: Any] = [
+      kSecClass as String: kSecClassGenericPassword,
+      kSecAttrService as String: service,
+      kSecAttrAccount as String: account,
+      kSecReturnData as String: true,
+      kSecMatchLimit as String: kSecMatchLimitOne
+    ]
+
+    var item: CFTypeRef?
+    let status = SecItemCopyMatching(query as CFDictionary, &item)
+    guard status == errSecSuccess, let data = item as? Data else {
+      return nil
+    }
+    return String(data: data, encoding: .utf8)
+  }
+
+  private func keychainSetString(_ value: String, service: String, account: String) -> Bool {
+    let data = value.data(using: .utf8) ?? Data()
+    let query: [String: Any] = [
+      kSecClass as String: kSecClassGenericPassword,
+      kSecAttrService as String: service,
+      kSecAttrAccount as String: account
+    ]
+
+    let attributes: [String: Any] = [
+      kSecValueData as String: data
+    ]
+
+    let status = SecItemCopyMatching(query as CFDictionary, nil)
+    if status == errSecSuccess {
+      return SecItemUpdate(query as CFDictionary, attributes as CFDictionary) == errSecSuccess
+    } else if status == errSecItemNotFound {
+      var newItem = query
+      newItem[kSecValueData as String] = data
+      return SecItemAdd(newItem as CFDictionary, nil) == errSecSuccess
+    }
+
+    return false
   }
 }

@@ -8,6 +8,9 @@
 #include <fstream>
 #include <string>
 
+#include <glib.h>
+#include <glib/gstdio.h>
+
 #include <cstring>
 
 #include "platform_version_plugin_private.h"
@@ -21,6 +24,36 @@ struct _PlatformVersionPlugin {
 };
 
 G_DEFINE_TYPE(PlatformVersionPlugin, platform_version_plugin, g_object_get_type())
+
+static std::string get_or_create_stable_device_id() {
+  const char* config_dir = g_get_user_config_dir();
+  std::string base_dir = config_dir != nullptr ? std::string(config_dir) : std::string(".");
+  std::string dir_path = base_dir + "/platform_version";
+  std::string file_path = dir_path + "/stable_device_id";
+
+  {
+    std::ifstream in(file_path);
+    std::string existing;
+    if (in.good() && std::getline(in, existing)) {
+      if (!existing.empty()) return existing;
+    }
+  }
+
+  g_mkdir_with_parents(dir_path.c_str(), 0700);
+
+  gchar* uuid_c = g_uuid_string_random();
+  std::string new_id = uuid_c != nullptr ? std::string(uuid_c) : std::string();
+  g_free(uuid_c);
+
+  if (!new_id.empty()) {
+    std::ofstream out(file_path, std::ios::trunc);
+    if (out.good()) {
+      out << new_id;
+    }
+  }
+
+  return new_id;
+}
 
 // Called when a method call is received from Flutter.
 static void platform_version_plugin_handle_method_call(
@@ -64,6 +97,7 @@ FlMethodResponse* get_device_info() {
   gethostname(hostname, sizeof(hostname));
   
   // Add basic system info
+  fl_value_set_string_take(device_info, "stableDeviceId", fl_value_new_string(get_or_create_stable_device_id().c_str()));
   fl_value_set_string_take(device_info, "systemName", fl_value_new_string(uname_data.sysname));
   fl_value_set_string_take(device_info, "nodeName", fl_value_new_string(uname_data.nodename));
   fl_value_set_string_take(device_info, "release", fl_value_new_string(uname_data.release));
