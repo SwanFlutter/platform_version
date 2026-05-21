@@ -65,6 +65,9 @@ static void platform_version_plugin_handle_method_call(
 
   if (strcmp(method, "getPlatformVersion") == 0) {
     response = get_platform_version();
+  } else if (strcmp(method, "getAppVersion") == 0) {
+    g_autoptr(FlValue) result = fl_value_new_string("1.0.0");
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   } else if (strcmp(method, "getDeviceInfo") == 0) {
     response = get_device_info();
   } else {

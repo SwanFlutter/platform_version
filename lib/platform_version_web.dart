@@ -49,6 +49,11 @@ class PlatformVersionWeb extends PlatformVersionPlatform {
     };
   }
 
+  @override
+  Future<String?> getAppVersion() async {
+    return web.window.navigator.appVersion;
+  }
+
   String _getOrCreateStableDeviceId() {
     const storageKey = 'platform_version_stable_device_id';
 

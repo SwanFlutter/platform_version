@@ -30,4 +30,8 @@ abstract class PlatformVersionPlatform extends PlatformInterface {
   Future<Map<String, dynamic>?> getDeviceInfo() {
     throw UnimplementedError('getDeviceInfo() has not been implemented.');
   }
+
+  Future<String?> getAppVersion() {
+    throw UnimplementedError('getAppVersion() has not been implemented.');
+  }
 }

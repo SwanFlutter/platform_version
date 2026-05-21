@@ -15,6 +15,9 @@ public class PlatformVersionPlugin: NSObject, FlutterPlugin {
       result("macOS " + ProcessInfo.processInfo.operatingSystemVersionString)
     case "getDeviceInfo":
       result(getDeviceInfo())
+    case "getAppVersion":
+      let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+      result(version)
     default:
       result(FlutterMethodNotImplemented)
     }

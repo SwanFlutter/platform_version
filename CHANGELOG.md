@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.4
+
+### Added
+* Add `getAppVersion()` to retrieve the application version across all platforms (Android, iOS, Web, Windows, macOS, Linux)
+
 ## 0.0.3
 
 ### Added

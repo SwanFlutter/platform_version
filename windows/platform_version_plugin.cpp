@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <sstream>
+#include <vector>
 
 #include <string>
 
@@ -123,6 +124,29 @@ PlatformVersionPlugin::~PlatformVersionPlugin() {}
         return osvi.dwMajorVersion;
     }
 
+    std::string GetAppVersion() {
+        wchar_t szPath[MAX_PATH];
+        GetModuleFileNameW(NULL, szPath, MAX_PATH);
+
+        DWORD dwHandle = 0;
+        DWORD dwSize = GetFileVersionInfoSizeW(szPath, &dwHandle);
+        if (dwSize == 0) return "1.0.0";
+
+        std::vector<BYTE> buffer(dwSize);
+        if (!GetFileVersionInfoW(szPath, dwHandle, dwSize, buffer.data())) return "1.0.0";
+
+        VS_FIXEDFILEINFO* lpffi = nullptr;
+        UINT uLen = 0;
+        if (!VerQueryValueW(buffer.data(), L"\\", (LPVOID*)&lpffi, &uLen)) return "1.0.0";
+
+        std::ostringstream version;
+        version << HIWORD(lpffi->dwFileVersionMS) << "."
+                << LOWORD(lpffi->dwFileVersionMS) << "."
+                << HIWORD(lpffi->dwFileVersionLS) << "."
+                << LOWORD(lpffi->dwFileVersionLS);
+        return version.str();
+    }
+
     void PlatformVersionPlugin::HandleMethodCall(
             const flutter::MethodCall<flutter::EncodableValue> &method_call,
             std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
@@ -148,6 +172,8 @@ PlatformVersionPlugin::~PlatformVersionPlugin() {}
             }
 
             result->Success(flutter::EncodableValue(version_stream.str()));
+        } else if (method_call.method_name().compare("getAppVersion") == 0) {
+            result->Success(flutter::EncodableValue(GetAppVersion()));
         } else if (method_call.method_name().compare("getDeviceInfo") == 0) {
             flutter::EncodableMap device_info = GetDeviceInfo();
             result->Success(flutter::EncodableValue(device_info));

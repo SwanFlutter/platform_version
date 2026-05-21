@@ -23,4 +23,10 @@ class MethodChannelPlatformVersion extends PlatformVersionPlatform {
     if (result == null) return null;
     return Map<String, dynamic>.from(result as Map);
   }
+
+  @override
+  Future<String?> getAppVersion() async {
+    final version = await methodChannel.invokeMethod<String>('getAppVersion');
+    return version;
+  }
 }

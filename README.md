@@ -11,11 +11,12 @@ A cross-platform Flutter plugin for retrieving current platform version informat
 
 A lightweight, cross-platform Flutter plugin that exposes the current platform version and useful device information to Dart code. This plugin provides native implementations for Android, iOS, Windows, macOS, Linux, and Web platforms.
 
-**Current version:** 0.0.3
+**Current version:** 0.0.4
 
 ## Features
 
 - 🔍 Get platform/OS version information (e.g., "Android 13", "iOS 16.2")
+- 📦 Get application version (e.g., "1.0.0")
 - 📱 Retrieve comprehensive device information (brand, model, SDK version, user agent, etc.)
 - 🌐 Full cross-platform support
 - 🚀 Simple and intuitive API
@@ -45,7 +46,7 @@ Add the following to your project's `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  platform_version: ^0.0.3
+  platform_version: ^0.0.4
 ```
 
 **From Git (latest):**
@@ -172,6 +173,9 @@ class _MyAppState extends State<MyApp> {
     try {
       // Get platform version
       final version = await _plugin.getPlatformVersion();
+      
+      // Get application version
+      final appVersion = await _plugin.getAppVersion();
       
       // Get device information
       final info = await _plugin.getDeviceInfo();
@@ -304,6 +308,25 @@ Returns a human-readable platform/OS version string.
 final plugin = PlatformVersion();
 final version = await plugin.getPlatformVersion();
 print('Running on: $version');
+```
+
+##### `getAppVersion()`
+
+```dart
+Future<String?> getAppVersion()
+```
+
+Returns the version of the application.
+
+**Returns:**
+- `String?` - Application version (e.g., "1.0.0") or `null` if unavailable
+
+**Usage:**
+
+```dart
+final plugin = PlatformVersion();
+final appVersion = await plugin.getAppVersion();
+print('App Version: $appVersion');
 ```
 
 ##### `getDeviceInfo()`

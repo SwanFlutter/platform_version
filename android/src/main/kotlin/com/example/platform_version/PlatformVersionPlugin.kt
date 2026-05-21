@@ -8,6 +8,8 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import java.util.UUID
+import android.content.pm.PackageManager
+import android.content.pm.PackageInfo
 
 /** PlatformVersionPlugin */
 class PlatformVersionPlugin :
@@ -40,6 +42,14 @@ class PlatformVersionPlugin :
             "getDeviceInfo" -> {
                 val deviceInfo = getDeviceInfo()
                 result.success(deviceInfo)
+            }
+            "getAppVersion" -> {
+                try {
+                    val packageInfo = applicationContext.packageManager.getPackageInfo(applicationContext.packageName, 0)
+                    result.success(packageInfo.versionName)
+                } catch (e: Exception) {
+                    result.error("UNAVAILABLE", "Could not get app version", e.message)
+                }
             }
             else -> {
                 result.notImplemented()

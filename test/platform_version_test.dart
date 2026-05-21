@@ -14,6 +14,12 @@ class MockPlatformVersionPlatform
   Future<Map<String, dynamic>?> getDeviceInfo() {
     throw UnimplementedError();
   }
+
+  @override
+  Future<String?> getAppVersion() {
+    // TODO: implement getAppVersion
+    throw UnimplementedError();
+  }
 }
 
 void main() {
